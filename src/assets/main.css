@@ -1,0 +1,59 @@
+@import './base.css';
+
+#app {
+  min-height: 100vh;
+}
+
+body {
+  background: #e8eef5;
+  color: #102a43;
+}
+
+a {
+  color: #1d4f7a;
+  text-decoration: none;
+}
+
+.v-application {
+  background: #e8eef5 !important;
+}
+
+.v-main {
+  background: #e8eef5;
+}
+
+.v-card {
+  border: 1px solid #cad5e2;
+  box-shadow: none !important;
+}
+
+.v-sheet {
+  border: 1px solid #cad5e2;
+  box-shadow: none !important;
+}
+
+.v-table,
+.v-data-table {
+  border: 1px solid #cad5e2;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.v-data-table thead th {
+  background: #e9eff6;
+  color: #334e68;
+  font-weight: 650 !important;
+  white-space: nowrap;
+}
+
+.v-data-table tbody tr:hover {
+  background: #f3f6fa;
+}
+
+.v-field {
+  border-radius: 8px !important;
+}
+
+.v-btn {
+  letter-spacing: 0 !important;
+}

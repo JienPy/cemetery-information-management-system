@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  name         String
+  role         String   @default("officer")
+  passwordHash String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  intermentsCreated Interment[] @relation("IntermentsCreated")
+  auditLogs         AuditLog[]
+}
+
+model Cemetery {
+  id        Int      @id @default(autoincrement())
+  code      String?  @unique
+  name      String
+  address   String?
+  status    String   @default("active")
+  latitude  Float?
+  longitude Float?
+  boundaryJson String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  plots Plot[]
+}
+
+model Plot {
+  id          Int      @id @default(autoincrement())
+  cemeteryId  Int
+  type        String
+  code        String
+  section     String?
+  block       String?
+  number      String?
+  status      String   @default("available")
+  latitude    Float?
+  longitude   Float?
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  cemetery    Cemetery   @relation(fields: [cemeteryId], references: [id])
+  interments  Interment[]
+  transfersFrom Transfer[] @relation("TransferFromPlot")
+  transfersTo   Transfer[] @relation("TransferToPlot")
+
+  @@unique([cemeteryId, code])
+  @@index([type, status])
+}
+
+model Interment {
+  id             Int      @id @default(autoincrement())
+  caseNumber     String   @unique
+  plotId         Int?
+  createdById    Int?
+  status         String   @default("active")
+  firstName      String
+  middleName     String?
+  lastName       String
+  age            Int?
+  gender         String?
+  indigent       String?
+  address        String?
+  dateOfBirth    DateTime?
+  dateOfDeath    DateTime
+  intermentDate  DateTime?
+  contactPerson  String?
+  contactNumber  String?
+  newUserOfBurial String?
+  transferNotes  String?
+  remarks        String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  plot       Plot?    @relation(fields: [plotId], references: [id])
+  createdBy  User?    @relation("IntermentsCreated", fields: [createdById], references: [id])
+  payments   Payment[]
+  renewals   Renewal[]
+  transfers  Transfer[]
+
+  @@index([lastName, firstName])
+  @@index([status])
+  @@index([dateOfDeath])
+}
+
+model Payment {
+  id           Int      @id @default(autoincrement())
+  intermentId  Int
+  amount       Decimal  @default(0)
+  orNumber     String?
+  paidAt       DateTime?
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  interment Interment @relation(fields: [intermentId], references: [id], onDelete: Cascade)
+
+  @@index([orNumber])
+}
+
+model Renewal {
+  id            Int      @id @default(autoincrement())
+  intermentId   Int
+  status        String   @default("pending")
+  coverageYears Int      @default(7)
+  startsAt      DateTime
+  expiresAt     DateTime
+  renewedAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  interment Interment @relation(fields: [intermentId], references: [id], onDelete: Cascade)
+
+  @@index([status, expiresAt])
+}
+
+model Transfer {
+  id           Int      @id @default(autoincrement())
+  intermentId  Int
+  fromPlotId   Int?
+  toPlotId     Int?
+  reason       String?
+  transferredAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  interment Interment @relation(fields: [intermentId], references: [id], onDelete: Cascade)
+  fromPlot  Plot?     @relation("TransferFromPlot", fields: [fromPlotId], references: [id])
+  toPlot    Plot?     @relation("TransferToPlot", fields: [toPlotId], references: [id])
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  entity    String
+  entityId  Int?
+  action    String
+  details   String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([entity, entityId])
+}
